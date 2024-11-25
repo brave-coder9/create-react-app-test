@@ -1,20 +1,25 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { socket } from "../socket";
-import { GameContext } from "../contexts/GameContextProvider";
 
 export function Room() {
-  const { roomCode } = useContext(GameContext);
   const [message, setMessage] = useState("");
 
+  const [joinOneState, setJoinOneState] = useState(false);
   useEffect(() => {
-    console.log({ roomCode });
-    if (!roomCode) return;
-    socket.emit("joinGroup", { group: roomCode });
-  }, [roomCode]);
+    socket.emit("joinOneId", { oneId: "aaa-111" });
+  }, []);
+  useEffect(() => {
+    const onJoinOneId = ({ oneId }) => {
+      console.log({ oneId });
+      setJoinOneState(true);
+    };
+    socket.on("joinOneId", onJoinOneId);
+    return () => socket.off("joinOneId", onJoinOneId);
+  }, []);
 
   useEffect(() => {
-    const onTestMsg = ({ msg }) => {
-      setMessage(`Test Msg: ${msg}`);
+    const onTestMsg = ({ oneId, msg }) => {
+      setMessage(`Test Msg: ${msg}, oneId: ${oneId}`);
     };
     socket.on("testMsg", onTestMsg);
     return () => socket.off("testMsg", onTestMsg);
